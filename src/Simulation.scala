@@ -4,9 +4,10 @@ object Simulation {
     NumberOfClients = 50,
     NumberOfProviders = 50,
     ProbabilitySmartProvider = 0.5,
-    NumberOfCompetencies = 7,
+    PossibleCompetencies = List (-0.9, -0.3, 0.3, 0.9),
     NumberOfTerms = 5,
-    RecencyScalingPeriodToHalf = 5,
+    MinimumRecentMemoryLength = 5,
+    MaximumRecentMemoryLength = 30,
     ClientChangesPerRound = 1)
   val records = new Records
   val network = new Network (config, records)

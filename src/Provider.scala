@@ -1,3 +1,5 @@
+import jaspr.domain.{Agent, ReputationType, Term}
+import jaspr.explanation.ijcai.IJCAIExplanation
 import scala.collection.mutable
 import Chooser.{chooseFrom, flip}
 import Utilities.{createMutableMap, toMap}
@@ -11,7 +13,7 @@ class Provider (config: Configuration, network: Network) {
   /** Competence of agent in providing service (varies over time) */
   var competency = chooseFrom (PossibleCompetencies)
   /** Last round at which the provider's competency decreased */
-  var lastCompetencyDecrease = Int.MinValue
+  var lastCompetencyDecrease = Long.MinValue
   /** The standard offer of the provider, initialised to be equal balance across all terms */
   val offer = createMutableMap (Terms) (1.0 / NumberOfTerms)
   /** Tailoring applied by the provider for each service quality term for each client, initially 0.0 for all
@@ -23,6 +25,8 @@ class Provider (config: Configuration, network: Network) {
   val offerCompensation = offerImprovement / (NumberOfTerms - 1)
   /** The cumulative utility gained by this provider from service provisions */
   var utility = 0.0
+  /** A wrapper for this agent used for the explanation generation library */
+  val agentID = new ProviderAgentIdentifier (this)
 
   /** Calculate the adjustments to make to the standard offer in tailoring to a given client */
   def getAdjustments (client: Client): Map[Term, Double] =
@@ -44,36 +48,44 @@ class Provider (config: Configuration, network: Network) {
     getOffer (client).mapValues (_ * competency)
   }
 
-  /** Improve the offers of the provider based on explanations of reputation assessment received, if a smart provider (else do nothing) */
-  def improve (failureExplanations: Seq[Explanation], successExplanations: Seq[Explanation], round: Int) {
-    if (smart) {
-      for (explanation <- failureExplanations) {
-        import explanation._
-        for (termExplanation <- pros)
-          termExplanation match {
-            case PreferredTermExplanation (term) =>
+  def asClient (agent: Agent) =
+    agent.asInstanceOf[ClientAgentIdentifier].client
+
+  def improve (explanation: SelectionExplanation) {
+    if (explanation.rejected == this)
+
+  }
+
+  def improveFromFailure (explanation: IJCAIExplanation, round: Long) {
+    import explanation._
+    for (term <- getDecisiveCriteria.getPros)
+      increaseStandardOffer (term)
+    for (term <- Terms) {
+      val rtExplanations = getReputationType (term)
+      if (rtExplanations != null)
+        for (repType <- rtExplanations.getPositiveAttributes)
+          repType match {
+            case ReputationType.I =>
+              increaseTailoring (asClient (getAssessor), term)
+            case ReputationType.W =>
               increaseStandardOffer (term)
-            case ReputationTypeExplanation (term, repType) =>
-              if (repType == IndividualRatings)
-                increaseTailoring (client, term)
-              else
-                increaseStandardOffer (term)
-            case TypedRecencyExplanation (term, repType) =>
-              if (!capabilityRecentlyDecreased (round))
-                if (repType == IndividualRatings)
-                  increaseTailoring (client, term)
-                else
-                  increaseStandardOffer (term)
-              if (generalRecency && !capabilityRecentlyDecreased (round))
-                Terms.foreach (increaseTailoring (client, _))
           }
-        for (explanation <- successExplanations) {
-          import explanation._
-          for (termExplanation <- pros)
-            decreaseTailoring (client, termExplanation.term)
-        }
-      }
+      if (getRecencyTK (term, ReputationType.I) != null && !capabilityRecentlyDecreased (round))
+        increaseTailoring (asClient (getAssessor), term)
+      if (getRecencyTK (term, ReputationType.W) != null && !capabilityRecentlyDecreased (round))
+        increaseStandardOffer (term)
+      if (getRecency != null && !capabilityRecentlyDecreased (round))
+        Terms.foreach (increaseTailoring (asClient (getAssessor), _))
     }
+  }
+
+  def improveFromSuccess (explanation: IJCAIExplanation, round: Long) {
+    import explanation._
+    for (term <- getDecisiveCriteria.getPros)
+      decreaseTailoring (asClient (getAssessor), term)
+    for (term <- Terms)
+      if (getReputationType (term) != null || getRecencyTK (term, ReputationType.I) != null || getRecencyTK (term, ReputationType.W) != null)
+        decreaseTailoring (asClient (getAssessor), term)
   }
 
   /** Increase the standard offer for a given term */
@@ -98,7 +110,7 @@ class Provider (config: Configuration, network: Network) {
   }
 
   /** Calculate whether the provider's competence has recently decreased */
-  def capabilityRecentlyDecreased (round: Int) =
+  def capabilityRecentlyDecreased (round: Long) =
     lastCompetencyDecrease >= round - RecencyScalingPeriodToHalf
 
   /** Change the competence of the provider to a new random value */

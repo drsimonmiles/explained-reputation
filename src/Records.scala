@@ -1,3 +1,5 @@
+import jaspr.domain.Term
+
 import scala.collection.mutable
 
 /** A log of past agent interactions */
