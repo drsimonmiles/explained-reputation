@@ -18,11 +18,17 @@ object Explanations extends IJCAIExplanationGenerator {
     counter += 1
     counter.toString
   }
+
+  def asClient (agent: Agent) =
+    agent.asInstanceOf[ClientAgentIdentifier].client
+
+  def asProvider (agent: Agent) =
+    agent.asInstanceOf[ProviderAgentIdentifier].provider
 }
 
 /** Wraps the library agent preferences to access a client's preferences */
 class WrappedPreferences (client: Client, config: Configuration) extends AgentPreferences {
-  override val getLambda = config.RecencyScalingFactor
+  override val getLambda = double2Double (client.recencyScalingFactor)
   override val getReputationTypePreferences = {
 		val map = new java.util.HashMap[ReputationType, java.lang.Double] ()
 		map.put (ReputationType.I, client.ownInteractionsWeight)
