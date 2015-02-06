@@ -13,12 +13,15 @@ class FIRE (config: Configuration) {
     /** Per term, calculate the weighted trust value based on the interactions */
     def calculateTermTrust (term: Term) = {
       /** Per reputation type and term, calculate the weighted sum */
-      def calculateTypedTermTrust (interactions: List[Interaction]): Double = {
-        val weightsAndRatings = interactions.map (interaction => (calculateRecency (interaction), interaction.ratings (term)))
-        val weightedRatings = weightsAndRatings.map (x => x._1 * x._2).sum
-        val weightsSum = weightsAndRatings.map (_._1).sum
-        weightedRatings / weightsSum
-      }
+      def calculateTypedTermTrust (interactions: List[Interaction]): Double =
+        if (interactions.isEmpty)
+          0.0
+        else {
+          val weightsAndRatings = interactions.map (interaction => (calculateRecency (interaction), interaction.ratings (term)))
+          val weightedRatings = weightsAndRatings.map (x => x._1 * x._2).sum
+          val weightsSum = weightsAndRatings.map (_._1).sum
+          weightedRatings / weightsSum
+        }
       /** Calculate the recency weighting of an interaction in the given current round */
       def calculateRecency (interaction: Interaction): Double =
         pow (E, -((round - interaction.round) / client.recencyScalingFactor))
@@ -27,7 +30,7 @@ class FIRE (config: Configuration) {
       calculateTypedTermTrust (ownInteractions) * client.ownInteractionsWeight +
         calculateTypedTermTrust (peerInteractions) * client.peerInteractionsWeight
     }
-    /** Weighted sum over the term-specific trust values */
+    /* Weighted sum over the term-specific trust values */
     terms.map (term => calculateTermTrust (term) * client.termPreferences (term)).sum
   }
 }

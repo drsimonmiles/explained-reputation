@@ -7,16 +7,16 @@ class Network (config: Configuration, records: Records) {
 
   /** The client agents in the network, allocated in groups */
   var clients: List[Client] =
-    groups.map (group => fill (NumberOfClientsPerGroup) (new Client (group, config, this, records))).flatten.toList
+    groups.map (group => fill (numberOfClientsPerGroup) (new Client (group, config, this, records))).flatten.toList
 
   /** The provider agents in the network */
   val providers: List[Provider] =
-    fill (NumberOfProviders) (new Provider (config, this))
+    fill (numberOfProviders) (new Provider (config, this))
 
   /** Remove a random subset of clients and replace them with a new set */
   def changeClients () {
     val shuffled = shuffle (clients)
-    val (removed, retained) = shuffled.splitAt (ClientChangesPerRound)
+    val (removed, retained) = shuffled.splitAt (clientChangesPerRound)
     clients = retained ::: removed.map (old => new Client (old.group, config, this, records))
   }
 }

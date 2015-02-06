@@ -11,17 +11,17 @@ class Provider (config: Configuration, network: Network) {
   import config._
 
   /** True if the provider takes into account explanations of past reputation assessments, false otherwise */
-  val smart = flip (SmartProviderProbability)
+  val smart = flip (smartProviderProbability)
   /** Competence of agent in providing service (varies over time) */
-  var competence = chooseFrom (PossibleCompetencies)
+  var competence = chooseFrom (possibleCompetencies)
   /** Change in competence since previous round */
   var competenceChange = 0.0
   /** The offers of the provider per group, initialised to be equal balance across all terms */
-  val offers = createMap (groups) (createMutableMap (terms) (1.0 / NumberOfTerms))
+  val offers = createMap (groups) (createMutableMap (terms) (1.0 / numberOfTerms))
   /** How much to improve a term of the standard offer or a tailored offer in reaction to reputation explanations */
   val offerImprovement = 0.1
   /** How much to reduce other terms in the standard offer when improving one */
-  val offerCompensation = offerImprovement / (NumberOfTerms - 1)
+  val offerCompensation = offerImprovement / (numberOfTerms - 1)
   /** The cumulative utility gained by this provider from service provisions */
   var utility = 0.0
   /** A wrapper for this agent used for the explanation generation library */
@@ -42,7 +42,6 @@ class Provider (config: Configuration, network: Network) {
 
       val client = asClient (getAssessor)
       val changes = createMap (groups)(createMutableMap (terms)(0))
-
       for (term <- getDecisiveCriteria.getPros.asScala)
         changes (client.group)(term) += 1
       for (term <- terms) {
@@ -93,9 +92,9 @@ class Provider (config: Configuration, network: Network) {
 
   /** Mark the end of this round, possibly changing the competency of the provider */
   def tick (round: Int) {
-    if (flip (CompetenceChangeProbability)) {
+    if (flip (competenceChangeProbability)) {
       val lastCompetency = competence
-      competence = chooseFrom (PossibleCompetencies)
+      competence = chooseFrom (possibleCompetencies)
       competenceChange = competence - lastCompetency
     } else {
       competenceChange = 0.0

@@ -5,11 +5,11 @@ import scala.collection.JavaConverters._
 
 /** Primary access point for the explanation generation library functions */
 object Explanations extends IJCAIExplanationGenerator {
-	def explain (client: Client, agentA: Provider, agentB: Provider, round: Long): IJCAIExplanation = {
-		val agentAScore = new TrustScore (client.agentID, agentA.agentID, round)
-		val agentBScore = new TrustScore (client.agentID, agentB.agentID, round)
+	def explain (client: Client, betterAgent: Provider, worseAgent: Provider, round: Long): IJCAIExplanation = {
+		val betterScore = new TrustScore (client.agentID, betterAgent.agentID, round)
+		val worseScore = new TrustScore (client.agentID, worseAgent.agentID, round)
 
-		generateExplanation (agentAScore, agentBScore).asInstanceOf[IJCAIExplanation]
+		generateExplanation (betterScore, worseScore).asInstanceOf[IJCAIExplanation]
 	}
 
 	/** Generate a new name for a named entity */
@@ -28,7 +28,7 @@ object Explanations extends IJCAIExplanationGenerator {
 
 /** Wraps the library agent preferences to access a client's preferences */
 class WrappedPreferences (client: Client, config: Configuration) extends AgentPreferences {
-  override val getLambda = double2Double (client.recencyScalingFactor)
+  override val getLambda = new java.lang.Double (client.recencyScalingFactor)
   override val getReputationTypePreferences = {
 		val map = new java.util.HashMap[ReputationType, java.lang.Double] ()
 		map.put (ReputationType.I, client.ownInteractionsWeight)
