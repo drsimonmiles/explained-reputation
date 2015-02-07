@@ -34,10 +34,10 @@ case class Configuration (
 
   // Values derived from configuration options
 
-  /** The client groups */
-  val groups = List.fill (numberOfGroups) (new Group (this))
   /** The terms on which a service's quality is judged */
   val terms = List.fill (numberOfTerms) (new Term (Explanations.name))
+  /** The client groups */
+  val groups = List.fill (numberOfGroups) (new Group (this))
   /** A FIRE reputation assessor component configured on the basis of the above options */
   val assessor = new FIRE (this)
   /** Calculate the recency weighting from a client's memory length */

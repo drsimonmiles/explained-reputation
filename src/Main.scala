@@ -3,7 +3,7 @@ import java.io.File
 /** Main class, run experiments and record results */
 object Main extends App {
   /** The number of simulations to run per experiment */
-  val numberOfSimulations = 16
+  val numberOfSimulations = 8
 
   /** Perform one experiment, varying one parameter for the x-axis (time is used as x-axis if no parameter is given),
     * saving accumulated records and then saving accumulated averages
@@ -54,7 +54,7 @@ object Main extends App {
     recordsPerProvider = 40,
     competenceChangeProbability = 0.05,
     explorationProbability = 0.2,
-    numberOfRounds = 200,
+    numberOfRounds = 100,
     clientChangesPerRound = 0)
 
   // Run an experiment with a static network, with round as x-axis, total provider utility as y-axis
