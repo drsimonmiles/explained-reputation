@@ -5,16 +5,16 @@ import Utilities.toMap
 import jaspr.explanation.ijcai.IJCAIExplanation
 
 /** A client agent */
-class Client (val group: Int, config: Configuration, network: Network, records: Records) {
+class Client (val group: Group, config: Configuration, network: Network, records: Records) {
   import config._
   import assessor.calculateTrust
   import network.providers
   import records.recordInteraction
 
   /** Preferences across service quality terms, each term mapped to a weight from 0.0 to 1.0, with weights summing to 1.0 */
-  val termPreferences: Map[Term, Double] = distributionSummingToOne (terms)
+  val termPreferences: Map[Term, Double] = distributionSummingToOne (terms, group.bias)
   /** The weight the client gives to its own past interactions in reputation assessment */
-  val ownInteractionsWeight = randomDouble (0.0, 1.0)
+  val ownInteractionsWeight = randomDouble (ownInteractionsBias, 1.0)
   /** The weight the client gives to past interactions of peers in reputation assessment */
   val peerInteractionsWeight = 1.0 - ownInteractionsWeight
   /** The number of rounds remembered by this client, from which recency weighting is also calculated */

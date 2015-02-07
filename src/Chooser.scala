@@ -1,4 +1,5 @@
 import scala.util.Random
+import Utilities.toMap
 
 /** Singleton utility functions based on random selection */
 object Chooser extends Random {
@@ -13,6 +14,13 @@ object Chooser extends Random {
   /** Create a random set of values which add to 1.0, mapped from a set of keys */
   def distributionSummingToOne[K] (keys: List[K]): Map[K, Double] =
     keys.zip (distributionSummingToOne (keys.size)).toMap
+
+  /** Create a random set of values which add to 1.0, mapped from a set of keys, with biases to certain keys */
+  def distributionSummingToOne[K] (keys: List[K], bias: Map[K, Double]): Map[K, Double] = {
+    val initial = keys.map (randomDouble (0.0, 1.0) + bias (_))
+    val total = initial.sum
+    keys.zip (initial.map (_ / total)).toMap
+  }
 
   /** Create a random list of a given length of values which add to 1.0 */
   def distributionSummingToOne (length: Int): List[Double] = {

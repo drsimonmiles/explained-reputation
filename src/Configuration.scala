@@ -2,38 +2,40 @@ import java.lang.Math.log
 import jaspr.domain.Term
 
 /** Options for a configuration of a simulation */
-class Configuration (
+case class Configuration (
   /** Number of groups of clients in a network */
-  val numberOfGroups: Int,
+  numberOfGroups: Int,
   /** Number of clients per group */
-  val numberOfClientsPerGroup: Int,
+  numberOfClientsPerGroup: Int,
   /** Number of providers in a network */
-  val numberOfProviders: Int,
+  numberOfProviders: Int,
   /** Probability (roughly, the proportion) of providers that adapt based on reputation explanations */
-  val smartProviderProbability: Double,
+  smartProviderProbability: Double,
   /** Number of service quality terms */
-  val numberOfTerms: Int,
+  numberOfTerms: Int,
   /** Number of possible values between 0.0 and 1.0 that a provider's competence may take */
-  val possibleCompetencies: List[Double],
+  possibleCompetencies: List[Double],
+  /** Bias in client's weighting of own interactions over peers': 0.0 means no bias, 1.0 means peer weighting always zero */
+  ownInteractionsBias: Double,
   /** Minimum period for which a client remembers recent interactions */
-  val minimumRecentMemoryLength: Int,
+  minimumRecentMemoryLength: Int,
   /** Maximum period for which a client remembers recent interactions */
-  val maximumRecentMemoryLength: Int,
+  maximumRecentMemoryLength: Int,
   /** Number of ratings kept per provider, to limit memory usage and processing time */
-  val recordsPerProvider: Int,
+  recordsPerProvider: Int,
   /** Probability that the most reputable provider is not chosen, then the next most reputation etc, */
-  val explorationProbability: Double,
+  explorationProbability: Double,
   /** The probability that a provider will change competence in a round */
-  val competenceChangeProbability: Double,
+  competenceChangeProbability: Double,
   /** Number of rounds in the simulation */
-  val numberOfRounds: Int,
+  numberOfRounds: Int,
   /** The number of old clients leaving and new clients entering a network each round */
-  val clientChangesPerRound: Int) {
+  clientChangesPerRound: Int) {
 
   // Values derived from configuration options
 
-  /** The client group numbers */
-  val groups = (1 to numberOfGroups).toList
+  /** The client groups */
+  val groups = List.fill (numberOfGroups) (new Group (this))
   /** The terms on which a service's quality is judged */
   val terms = List.fill (numberOfTerms) (new Term (Explanations.name))
   /** A FIRE reputation assessor component configured on the basis of the above options */

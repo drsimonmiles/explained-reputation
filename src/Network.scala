@@ -13,6 +13,9 @@ class Network (config: Configuration, records: Records) {
   val providers: List[Provider] =
     fill (numberOfProviders) (new Provider (config, this))
 
+  val getProviders: Map[Strategy, List[Provider]] =
+    providers.groupBy (_.strategy)
+
   /** Remove a random subset of clients and replace them with a new set */
   def changeClients () {
     val shuffled = shuffle (clients)
