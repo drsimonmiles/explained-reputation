@@ -1,3 +1,5 @@
+import java.util
+
 import jaspr.domain.{Agent, AgentPreferences, AgentRating, ReputationType, Term}
 import jaspr.explanation.ijcai.{IJCAIExplanation, IJCAIExplanationGenerator}
 import jaspr.fire.TrustScore
@@ -5,6 +7,7 @@ import scala.collection.JavaConverters._
 
 /** Primary access point for the explanation generation library functions */
 object Explanations extends IJCAIExplanationGenerator {
+  /** Generate explanations of why the given client preferred one provider to another in the current round */
 	def explain (client: Client, betterAgent: Provider, worseAgent: Provider, round: Long): IJCAIExplanation = {
 		val betterScore = new TrustScore (client.agentID, betterAgent.agentID, round)
 		val worseScore = new TrustScore (client.agentID, worseAgent.agentID, round)
@@ -14,14 +17,16 @@ object Explanations extends IJCAIExplanationGenerator {
 
 	/** Generate a new name for a named entity */
 	var counter = 0
-  def name = {
+  def name: String = {
     counter += 1
     counter.toString
   }
 
+  /** Get the Client object for the given Agent object */
   def asClient (agent: Agent) =
     agent.asInstanceOf[ClientAgentIdentifier].client
 
+  /** Get the Provider object for the given Agent object */
   def asProvider (agent: Agent) =
     agent.asInstanceOf[ProviderAgentIdentifier].provider
 }
@@ -44,25 +49,26 @@ class WrappedPreferences (client: Client, config: Configuration) extends AgentPr
 	}
 }
 
-/** Singleton for ratings by reputation types that are unused */
-object NoRatings extends java.util.LinkedList[AgentRating] ()
-
 /** Translation for a client agent to the explanations framework */
 class ClientAgentIdentifier (val client: Client, config: Configuration, records: Records) extends Agent (Explanations.name) {
 	import records.getInteractionRecords
 
   override val getPreferences = new WrappedPreferences (client, config)
+
+  /** Singleton for ratings by reputation types that are unused */
+  val noRatings = new util.LinkedList[AgentRating]()
+
+  /** Return ratings of the target provider for the given term and reputation type */
 	override def getRatings (target: Agent, term: Term, reputationType: ReputationType) = {
 	  val provider = target.asInstanceOf[ProviderAgentIdentifier].provider
 		val (ownInteractions, peerInteractions) = getInteractionRecords (provider, client)
     reputationType match {
 			case ReputationType.I => ownInteractions.map (_.asRatings (term)).asJava
 			case ReputationType.W => peerInteractions.map (_.asRatings (term)).asJava
-			case _ => NoRatings
+			case _ => noRatings
 		}
   }
 }
 
 /** Translation for a provider agent to the explanations framework */
-class ProviderAgentIdentifier (val provider: Provider) extends Agent (Explanations.name) {
-}
+class ProviderAgentIdentifier (val provider: Provider) extends Agent (Explanations.name) {}

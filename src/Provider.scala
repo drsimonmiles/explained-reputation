@@ -29,6 +29,7 @@ class Provider (config: Configuration, network: Network) {
   /** A wrapper for this agent used for the explanation generation library */
   val agentID = new ProviderAgentIdentifier (this)
 
+  /** Return the service offered to the given client */
   def getOffer (client: Client): Map[Term, Double] =
     offers (client.group).toMap
 
@@ -38,7 +39,9 @@ class Provider (config: Configuration, network: Network) {
     getOffer (client).mapValues (_ * competence)
   }
 
+  /** Improve the provider's offers based on explanations where this provider had worse reputation than another */
   def improveFromFailures (explanations: List[IJCAIExplanation], round: Long): Unit = {
+    /** Determine what should be improved based on a single explanation */
     def improveFromFailure (explanation: IJCAIExplanation): Map[Group, mutable.Map[Term, Int]] = {
       import explanation._
 
@@ -72,15 +75,18 @@ class Provider (config: Configuration, network: Network) {
       changes
     }
 
+    // Only improve if using the smart strategy
     if (strategy == SmartStrategy) {
       // votes will contain, for each group, the votes to improve each term
       val votes = createMap (groups)(mutable.Map[Term, Int] ())
+      // Gather votes on what to improve from each explanation
       for {explanation <- explanations
            additions = improveFromFailure (explanation)
            group <- groups
            term <- terms} {
         votes (group)(term) = votes (group).getOrElse (term, 0) + additions (group)(term)
       }
+      // Make improvements for each client group offer
       for (group <- groups) {
         // Improvements to a term in an offer will be proportional to the amount of improvement possible for that term as well as the votes
         val fractionalImprovements = toMap (terms)(term => votes (group)(term) * (1.0 - offers (group)(term)))

@@ -1,11 +1,13 @@
 import Explanations.asProvider
 import Strategy.strategies
 
-/** One simulation run */
+/** One simulation run with a given parameter configuration */
 class Simulation (config: Configuration) {
   import config._
 
+  /** The records of client-provider interactions */
   val records = new Records (config)
+  /** The simulated network of clients and providers */
   val network = new Network (config, records)
 
   /** Run the simulation, recording the results for the given x-axis value (or per-round if none) */

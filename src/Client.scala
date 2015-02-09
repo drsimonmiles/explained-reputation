@@ -37,7 +37,7 @@ class Client (val group: Group, config: Configuration, network: Network, records
   }
 
   /** Request a service from the given provider in the given round, and record ratings on how the interaction went */
-  def requestService (provider: Provider, round: Int) {
+  def requestService (provider: Provider, round: Int): Unit = {
     val service = provider.provideService (this)
     val ratings = toMap (terms) (term => service (term) * termPreferences (term))
     recordInteraction (provider, this, round, ratings)

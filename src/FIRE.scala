@@ -26,10 +26,11 @@ class FIRE (config: Configuration) {
       def calculateRecency (interaction: Interaction): Double =
         pow (E, -((round - interaction.round) / client.recencyScalingFactor))
 
-      /** Calculate the weighted sum of ratings from own and witness interactions */
+      /* Calculate the weighted sum of ratings from own and witness interactions */
       calculateTypedTermTrust (ownInteractions) * client.ownInteractionsWeight +
         calculateTypedTermTrust (peerInteractions) * client.peerInteractionsWeight
     }
+
     /* Weighted sum over the term-specific trust values */
     terms.map (term => calculateTermTrust (term) * client.termPreferences (term)).sum
   }

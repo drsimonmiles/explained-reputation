@@ -13,6 +13,7 @@ class Network (config: Configuration, records: Records) {
   val providers: List[Provider] =
     fill (numberOfProviders) (new Provider (config, this))
 
+  /** A map from strategy type (smart or dumb) to the providers using that strategy */
   val getProviders: Map[Strategy, List[Provider]] =
     providers.groupBy (_.strategy)
 
