@@ -24,7 +24,7 @@ class Simulation (config: Configuration) {
         strategies.map (strategy => results.record (strategy, round, y (network, strategy)))
       (1 to clientChangesPerRound).foreach (_ => network.changeClients ())
     }
-    if (!x.isDefined)
+    if (x.isDefined)
       strategies.map (strategy => results.record (strategy, x.get, y (network, strategy)))
   }
 }

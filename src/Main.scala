@@ -2,9 +2,6 @@ import java.io.File
 
 /** Main class, run experiments and record results */
 object Main extends App {
-  /** The number of simulations to run per experiment */
-  val numberOfSimulations = 8
-
   /** Perform one experiment, varying one parameter for the x-axis (time is used as x-axis if no parameter is given),
     * saving accumulated records and then saving accumulated averages
     *
@@ -13,7 +10,7 @@ object Main extends App {
     * @param xAxis If given, it is a tuple of the range of x values and a function to change the configuration for the next x value
     * @param yAxis: Function for calculating y value from given network state for a given strategy
     */
-  def experiment (name: String, base: Configuration,
+  def experiment (name: String, base: Configuration, numberOfSimulations: Int,
                   xAxis: Option[(Range, (Configuration, Int) => Configuration)])
                  (yAxis: (Network, Strategy) => Double): Unit = {
     val recordsFile = name + "-records.csv"
@@ -56,19 +53,24 @@ object Main extends App {
     explorationProbability = 0.2,
     numberOfRounds = 100,
     clientChangesPerRound = 0)
+  // Which experiment to run
+  val experiment = 2
 
-  // Run an experiment with a static network, with round as x-axis, total provider utility as y-axis
-  experiment ("static-v1", config, None) {
-    (network, strategy) => network.getProviders (strategy).map (_.utility).sum   // y axis values
+  experiment match {
+    case 1 =>
+      // Run an experiment with a static network, with round as x-axis, total provider utility as y-axis
+      experiment ("static-v3", config, 12, None) {
+        (network, strategy) => network.getProviders (strategy).map (_.utility).sum   // y axis values
+      }
+    case 2 =>
+      // Run an experiment with different number of client changes as x-axis, total provider utility as y-axis
+      experiment ("client-changes-v2", config, 4,
+        Some (0 to 16 by 2, {
+          (previous: Configuration, changes: Int) => previous.copy (clientChangesPerRound = changes)  // x axis values
+        })) {
+        (network, strategy) => network.getProviders (strategy).map (_.utility).sum   // y axis values
+      }
   }
-
-  // Run an experiment with different number of client changes as x-axis, number of improvements as y-axis
-  experiment ("client-changes-v1", config,
-    Some (0 to 10, {
-      (previous: Configuration, changes: Int) => previous.copy (clientChangesPerRound = changes)  // x axis values
-    })) {
-      (network, strategy) => network.getProviders (strategy).map (_.improvements).sum   // y axis values
-    }
 
   println ("Finished")
 }

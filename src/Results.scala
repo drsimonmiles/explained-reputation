@@ -28,7 +28,7 @@ class Results (val results: mutable.Map[(Strategy, Int), List[Double]]) {
   def writeRecords (resultsFile: String): Unit = {
     val out = new PrintWriter (new FileWriter (resultsFile, true))
     for ((strategy, x) <- results.keys)
-      out.print (strategy + "," + x + "," + results ((strategy, x)).mkString (","))
+      out.println (strategy + "," + x + "," + results ((strategy, x)).mkString (","))
     out.close ()
   }
 
@@ -37,8 +37,8 @@ class Results (val results: mutable.Map[(Strategy, Int), List[Double]]) {
     val out = new PrintWriter (new FileWriter (filename))
     val strategyList = strategies.toList
     out.print ("X,")
-//    out.println (strategyList.map (s => s + " avg," + s + " std dev").mkString (","))
-    out.println (strategyList.map (s => s + " avg").mkString (","))
+    out.println (strategyList.map (s => s + " avg," + s + " std dev").mkString (","))
+//    out.println (strategyList.map (s => s + " avg").mkString (","))
     for (x <- xValues) {
       out.print (x)
       for (strategy <- strategyList) {
@@ -47,8 +47,8 @@ class Results (val results: mutable.Map[(Strategy, Int), List[Double]]) {
         val deviation = standardDeviation (values)
         out.print (",")
         out.print (mean)
-//        out.print (",")
-//        out.print (deviation)
+        out.print (",")
+        out.print (deviation)
       }
       out.println ()
     }

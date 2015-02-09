@@ -94,7 +94,7 @@ class Provider (config: Configuration, network: Network) {
   }
 
   /** Mark the end of this round, possibly changing the competency of the provider */
-  def tick (round: Int): Unit = {
+  def tick (round: Int): Unit =
     if (flip (competenceChangeProbability)) {
       val lastCompetency = competence
       competence = chooseFrom (possibleCompetencies)
@@ -102,6 +102,4 @@ class Provider (config: Configuration, network: Network) {
     } else {
       competenceChange = 0.0
     }
-    improvements = 0
-  }
 }
